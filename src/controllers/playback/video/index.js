@@ -1,5 +1,6 @@
 import { playbackManager } from '../../../components/playback/playbackmanager';
 import SyncPlay from '../../../components/syncPlay/core';
+import browser from '../../../scripts/browser';
 import dom from '../../../scripts/dom';
 import inputManager from '../../../scripts/inputManager';
 import mouseManager from '../../../scripts/mouseManager';
@@ -28,7 +29,7 @@ import { appRouter } from '../../../components/appRouter';
         return document.querySelector('.dialogContainer .dialog.opened');
     }
 
-    export default function (view, params) {
+    export default function (view) {
         function getDisplayItem(item) {
             if (item.Type === 'TvChannel') {
                 const apiClient = ServerConnections.getApiClient(item.ServerId);
@@ -426,18 +427,18 @@ import { appRouter } from '../../../components/appRouter';
             if (state.NowPlayingItem) {
                 isEnabled = true;
                 updatePlayerStateInternal(event, player, state);
-                updatePlaylist(player);
+                updatePlaylist();
                 enableStopOnBack(true);
             }
         }
 
-        function onPlayPauseStateChanged(e) {
+        function onPlayPauseStateChanged() {
             if (isEnabled) {
                 updatePlayPauseState(this.paused());
             }
         }
 
-        function onVolumeChanged(e) {
+        function onVolumeChanged() {
             if (isEnabled) {
                 const player = this;
                 updatePlayerVolumeState(player, player.isMuted(), player.getVolume());
@@ -472,7 +473,7 @@ import { appRouter } from '../../../components/appRouter';
             }
         }
 
-        function onMediaStreamsChanged(e) {
+        function onMediaStreamsChanged() {
             const player = this;
             const state = playbackManager.getPlayerState(player);
             onStateChanged.call(player, {
@@ -534,7 +535,7 @@ import { appRouter } from '../../../components/appRouter';
             }
         }
 
-        function onTimeUpdate(e) {
+        function onTimeUpdate() {
             // Test for 'currentItem' is required for Firefox since its player spams 'timeupdate' events even being at breakpoint
             if (isEnabled && currentItem) {
                 const now = new Date().getTime();
@@ -794,7 +795,7 @@ import { appRouter } from '../../../components/appRouter';
             }
         }
 
-        function updatePlaylist(player) {
+        function updatePlaylist() {
             const btnPreviousTrack = view.querySelector('.btnPreviousTrack');
             const btnNextTrack = view.querySelector('.btnNextTrack');
             btnPreviousTrack.classList.remove('hide');
@@ -818,7 +819,7 @@ import { appRouter } from '../../../components/appRouter';
             elem.innerHTML = html;
         }
 
-        function onSettingsButtonClick(e) {
+        function onSettingsButtonClick() {
             const btn = this;
 
             import('../../../components/playback/playersettingsmenu').then((playerSettingsMenu) => {
@@ -987,14 +988,30 @@ import { appRouter } from '../../../components/appRouter';
          */
         let clickedElement;
 
+        function onClickCapture(e) {
+            // Firefox/Edge emits `click` even if `preventDefault` was used on `keydown`
+            // Ignore 'click' if another element was originally clicked
+            if (!e.target.contains(clickedElement)) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+
         function onKeyDown(e) {
             clickedElement = e.target;
 
             const key = keyboardnavigation.getKeyName(e);
             const isKeyModified = e.ctrlKey || e.altKey || e.metaKey;
 
-            if (!currentVisibleMenu && e.keyCode === 32) {
-                playbackManager.playPause(currentPlayer);
+            if (e.keyCode === 32) {
+                if (e.target.tagName !== 'BUTTON' || !layoutManager.tv) {
+                    playbackManager.playPause(currentPlayer);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Trick Firefox with a null element to skip next click
+                    clickedElement = null;
+                }
                 showOsd();
                 return;
             }
@@ -1261,11 +1278,11 @@ import { appRouter } from '../../../components/appRouter';
             nowPlayingPositionSlider.classList.add('focusable');
         }
 
-        view.addEventListener('viewbeforeshow', function (e) {
+        view.addEventListener('viewbeforeshow', function () {
             headerElement.classList.add('osdHeader');
             appRouter.setTransparency('full');
         });
-        view.addEventListener('viewshow', function (e) {
+        view.addEventListener('viewshow', function () {
             try {
                 Events.on(playbackManager, 'playerchange', onPlayerChange);
                 bindToPlayer(playbackManager.getCurrentPlayer());
@@ -1304,6 +1321,9 @@ import { appRouter } from '../../../components/appRouter';
                     capture: true,
                     passive: true
                 });
+                if (browser.firefox || browser.edge) {
+                    dom.addEventListener(document, 'click', onClickCapture, { capture: true });
+                }
             } catch (e) {
                 appRouter.goHome();
             }
@@ -1342,6 +1362,9 @@ import { appRouter } from '../../../components/appRouter';
                 capture: true,
                 passive: true
             });
+            if (browser.firefox || browser.edge) {
+                dom.removeEventListener(document, 'click', onClickCapture, { capture: true });
+            }
             stopOsdHideTimer();
             headerElement.classList.remove('osdHeader');
             headerElement.classList.remove('osdHeader-hidden');
@@ -1491,10 +1514,7 @@ import { appRouter } from '../../../components/appRouter';
             playbackManager.previousTrack(currentPlayer);
         });
         view.querySelector('.btnPause').addEventListener('click', function () {
-            // Ignore 'click' if another element was originally clicked (Firefox/Edge issue)
-            if (this.contains(clickedElement)) {
-                playbackManager.playPause(currentPlayer);
-            }
+            playbackManager.playPause(currentPlayer);
         });
         view.querySelector('.btnNextTrack').addEventListener('click', function () {
             playbackManager.nextTrack(currentPlayer);

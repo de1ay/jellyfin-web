@@ -795,7 +795,7 @@
     "Off": "Apagado",
     "NumLocationsValue": "{0} carpetas",
     "Normal": "Normal",
-    "None": "Nunguno",
+    "None": "Ninguno",
     "NoSubtitlesHelp": "Los subtítulos no se cargarán de manera predeterminada. Todavía se pueden activar manualmente durante la reproducción.",
     "NoSubtitleSearchResultsFound": "No se han encontrado resultados.",
     "MessageNoPluginConfiguration": "Este complemento no tiene opciones para configurar.",
@@ -1272,7 +1272,7 @@
     "TabAccess": "Acceso",
     "TV": "TV",
     "SystemDlnaProfilesHelp": "Los perfiles del sistema son de solo lectura. Los cambios en un perfil del sistema se guardarán en un nuevo perfil personalizado.",
-    "SyncPlayAccessHelp": "Seleccione el nivel de acceso que este usuario tiene a la función SyncPlay. SyncPlay permite sincronizar la reproducción con otros dispositivos.",
+    "SyncPlayAccessHelp": "Seleccione el nivel de acceso que este usuario tiene a la función SyncPlay. La misma permite sincronizar la reproducción con otros dispositivos.",
     "Sunday": "Domingo",
     "Suggestions": "Sugerencias",
     "Subtitles": "Subtítulos",
@@ -1498,8 +1498,8 @@
     "LabelSyncPlayHaltPlayback": "Detener la reproducción local",
     "LabelMinAudiobookResumeHelp": "Se asume que los títulos no se reproducen si se detienen antes de este tiempo.",
     "LabelMinAudiobookResume": "Reanudación mínima de audiolibros en minutos:",
-    "LabelMaxAudiobookResumeHelp": "Se asume que los títulos están completamente reproducidos si se detienen después de este tiempo.",
-    "LabelMaxAudiobookResume": "Reanudación máxima de audiolibros en minutos:",
+    "LabelMaxAudiobookResumeHelp": "Se asumirá que los títulos están completamente reproducidos si se detienen cuando el tiempo restante es menor a este valor.",
+    "LabelMaxAudiobookResume": "Reanudación de audiolibros en minutos:",
     "MessagePlaybackError": "Se produjo un error al reproducir este archivo en su receptor Google Cast.",
     "MessageChromecastConnectionError": "Su receptor de Google Cast no puede comunicarse con el servidor de Jellyfin. Compruebe la conexión y vuelve a intentarlo.",
     "AllowVppTonemappingHelp": "Mapeo de tonos completo basado en hardware sin usar el filtro OpenCL. Actualmente solo funciona al transcodificar videos con metadatos HDR10 incrustados.",
@@ -1508,5 +1508,5 @@
     "DisablePlugin": "Deshabilitar Plugin",
     "EnablePlugin": "Habilitar Plugin",
     "Framerate": "Tasa de Cuadros",
-    "DirectPlayHelp": "El Archivo fuente es enteramente compatible con este cliente y la sesión esta recibiendo el archivo sin modificaciones"
+    "DirectPlayHelp": "El Archivo fuente es enteramente compatible con este cliente y la sesión esta recibiendo el archivo sin modificaciones."
 }

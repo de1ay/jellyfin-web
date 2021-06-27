@@ -19,20 +19,16 @@ export async function serverAddress() {
         return Promise.resolve(apiClient.serverAddress());
     }
 
-    const current = await ServerConnections.getAvailableServers().then(servers => {
-        if (servers.length !== 0) {
-            return Promise.resolve(servers[0].ManualAddress);
-        }
-    });
-
-    // TODO this makes things faster but it also blocks the wizard in some scenarios
-    // if (current) return Promise.resolve(current);
-
     // Use servers specified in config.json
     const urls = await webSettings.getServers();
 
-    // Otherwise use computed base URL
-    if (urls.length == 0) {
+    if (urls.length === 0) {
+        // Don't use app URL as server URL
+        if (window.NativeShell) {
+            return Promise.resolve();
+        }
+
+        // Otherwise use computed base URL
         const index = window.location.href.toLowerCase().lastIndexOf('/web');
         if (index != -1) {
             urls.push(window.location.href.substring(0, index));
@@ -50,7 +46,7 @@ export async function serverAddress() {
                 url: url,
                 response: resp
             };
-        }).catch(error => {
+        }).catch(() => {
             return Promise.resolve();
         });
     });
@@ -117,7 +113,7 @@ export function processPluginConfigurationUpdateResult() {
     toast(globalize.translate('SettingsSaved'));
 }
 
-export function processServerConfigurationUpdateResult(result) {
+export function processServerConfigurationUpdateResult() {
     loading.hide();
     toast(globalize.translate('SettingsSaved'));
 }
@@ -131,9 +127,9 @@ export function processErrorResponse(response) {
         status = response.statusText;
     }
 
-    alert({
+    baseAlert({
         title: status,
-        message: response.headers ? response.headers.get('X-Application-Error-Code') : null
+        text: response.headers ? response.headers.get('X-Application-Error-Code') : null
     });
 }
 

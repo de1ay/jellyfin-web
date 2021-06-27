@@ -33,7 +33,6 @@ import '../legacy/focusPreventScroll';
 import '../legacy/vendorStyles';
 import SyncPlay from '../components/syncPlay/core';
 import { playbackManager } from '../components/playback/playbackmanager';
-import SyncPlayToasts from '../components/syncPlay/ui/syncPlayToasts';
 import SyncPlayNoActivePlayer from '../components/syncPlay/ui/players/NoActivePlayer';
 import SyncPlayHtmlVideoPlayer from '../components/syncPlay/ui/players/HtmlVideoPlayer';
 import SyncPlayHtmlAudioPlayer from '../components/syncPlay/ui/players/HtmlAudioPlayer';
@@ -55,7 +54,7 @@ window.getWindowLocationSearch = function(win) {
 
 // TODO: Move this elsewhere
 window.getParameterByName = function(name, url) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]');
     const regexS = '[\\?&]' + name + '=([^&#]*)';
     const regex = new RegExp(regexS, 'i');
     const results = regex.exec(url || getWindowLocationSearch());
@@ -169,7 +168,6 @@ function initSyncPlay() {
     // Start SyncPlay.
     const apiClient = ServerConnections.currentApiClient();
     if (apiClient) SyncPlay.Manager.init(apiClient);
-    SyncPlayToasts.init();
 
     // FIXME: Multiple apiClients?
     Events.on(ServerConnections, 'apiclientcreated', (e, newApiClient) => SyncPlay.Manager.init(newApiClient));
@@ -245,7 +243,7 @@ function onAppReady() {
 function registerServiceWorker() {
     /* eslint-disable compat/compat */
     if (navigator.serviceWorker && window.appMode !== 'cordova' && window.appMode !== 'android') {
-        navigator.serviceWorker.register('/serviceworker.js').then(() =>
+        navigator.serviceWorker.register('serviceworker.js').then(() =>
             console.log('serviceWorker registered')
         ).catch(error =>
             console.log('error registering serviceWorker: ' + error)

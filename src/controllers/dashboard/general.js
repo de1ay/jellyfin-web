@@ -14,12 +14,12 @@ import alert from '../../components/alert';
     function loadPage(page, config, languageOptions, systemInfo) {
         page.querySelector('#txtServerName').value = systemInfo.ServerName;
         page.querySelector('#txtCachePath').value = systemInfo.CachePath || '';
+        page.querySelector('#chkQuickConnectAvailable').checked = config.QuickConnectAvailable === true;
         $('#txtMetadataPath', page).val(systemInfo.InternalMetadataPath || '');
         $('#txtMetadataNetworkPath', page).val(systemInfo.MetadataNetworkPath || '');
         $('#selectLocalizationLanguage', page).html(languageOptions.map(function (language) {
             return '<option value="' + language.Value + '">' + language.Name + '</option>';
         })).val(config.UICulture);
-        currentLanguage = config.UICulture;
 
         loading.hide();
     }
@@ -34,15 +34,11 @@ import alert from '../../components/alert';
             config.CachePath = form.querySelector('#txtCachePath').value;
             config.MetadataPath = $('#txtMetadataPath', form).val();
             config.MetadataNetworkPath = $('#txtMetadataNetworkPath', form).val();
-            let requiresReload = config.UICulture !== currentLanguage;
+            config.QuickConnectAvailable = form.querySelector('#chkQuickConnectAvailable').checked;
             ApiClient.updateServerConfiguration(config).then(function() {
                 ApiClient.getNamedConfiguration(brandingConfigKey).then(function(brandingConfig) {
                     brandingConfig.LoginDisclaimer = form.querySelector('#txtLoginDisclaimer').value;
                     brandingConfig.CustomCss = form.querySelector('#txtCustomCss').value;
-
-                    if (currentBrandingOptions && brandingConfig.CustomCss !== currentBrandingOptions.CustomCss) {
-                        requiresReload = true;
-                    }
 
                     ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).then(function () {
                         Dashboard.processServerConfigurationUpdateResult();
@@ -56,10 +52,8 @@ import alert from '../../components/alert';
         return false;
     }
 
-    let currentBrandingOptions;
-    let currentLanguage;
     const brandingConfigKey = 'branding';
-    export default function (view, params) {
+    export default function (view) {
         $('#btnSelectCachePath', view).on('click.selectDirectory', function () {
             import('../../components/directorybrowser/directorybrowser').then(({default: directoryBrowser}) => {
                 const picker = new directoryBrowser();
@@ -110,7 +104,6 @@ import alert from '../../components/alert';
                 loadPage(view, responses[0], responses[1], responses[2]);
             });
             ApiClient.getNamedConfiguration(brandingConfigKey).then(function (config) {
-                currentBrandingOptions = config;
                 view.querySelector('#txtLoginDisclaimer').value = config.LoginDisclaimer || '';
                 view.querySelector('#txtCustomCss').value = config.CustomCss || '';
             });

@@ -155,7 +155,7 @@ import { Events } from 'jellyfin-apiclient';
             });
         }
 
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             if (!filtered.length) {
                 resolve();
                 return;
@@ -188,10 +188,11 @@ import { Events } from 'jellyfin-apiclient';
         if (!dictionary || !dictionary[key]) {
             dictionary = getDictionary(module, fallbackCulture);
         }
-        if (!dictionary) {
+        if (!dictionary || !dictionary[key]) {
+            console.error(`Translation key is missing from dictionary: ${key}`);
             return key;
         }
-        return dictionary[key] || key;
+        return dictionary[key];
     }
 
     function replaceAll(str, find, replace) {

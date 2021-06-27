@@ -11,6 +11,7 @@ import viewManager from './viewManager/viewManager';
 import Dashboard from '../scripts/clientUtils';
 import ServerConnections from './ServerConnections';
 import alert from './alert';
+import reactControllerFactory from './reactControllerFactory';
 
 class AppRouter {
     allRoutes = [];
@@ -341,7 +342,9 @@ class AppRouter {
             this.sendRouteToViewManager(ctx, next, route, controllerFactory);
         };
 
-        if (route.controller) {
+        if (route.pageComponent) {
+            onInitComplete(reactControllerFactory);
+        } else if (route.controller) {
             import('../controllers/' + route.controller).then(onInitComplete);
         } else {
             onInitComplete();
@@ -373,6 +376,7 @@ class AppRouter {
             fullscreen: route.fullscreen,
             controllerFactory: controllerFactory,
             options: {
+                pageComponent: route.pageComponent,
                 supportsThemeMedia: route.supportsThemeMedia || false,
                 enableMediaControl: route.enableMediaControl !== false
             },
@@ -427,12 +431,12 @@ class AppRouter {
 
         if (data.status === 403) {
             if (data.errorCode === 'ParentalControl') {
-                const isCurrentAllowed = this.currentRouteInfo ? (this.currentRouteInfo.route.anonymous || this.currentRouteInfo.route.startup) : true;
+                const isCurrentAllowed = appRouter.currentRouteInfo ? (appRouter.currentRouteInfo.route.anonymous || appRouter.currentRouteInfo.route.startup) : true;
 
                 // Bounce to the login screen, but not if a password entry fails, obviously
                 if (!isCurrentAllowed) {
-                    this.showForcedLogoutMessage(globalize.translate('AccessRestrictedTryAgainLater'));
-                    this.showLocalLogin(apiClient.serverId());
+                    appRouter.showForcedLogoutMessage(globalize.translate('AccessRestrictedTryAgainLater'));
+                    appRouter.showLocalLogin(apiClient.serverId());
                 }
             }
         }
@@ -446,7 +450,7 @@ class AppRouter {
 
     normalizeImageOptions(options) {
         let setQuality;
-        if (options.maxWidth || options.width || options.maxHeight || options.height) {
+        if (options.maxWidth || options.width || options.maxHeight || options.height || options.fillWidth || options.fillHeight) {
             setQuality = true;
         }
 
@@ -503,23 +507,28 @@ class AppRouter {
         const firstResult = this.firstConnectionResult;
 
         this.firstConnectionResult = null;
-        if (firstResult && firstResult.State === 'ServerSignIn') {
-            const url = firstResult.ApiClient.serverAddress() + '/System/Info/Public';
-            fetch(url).then(response => {
-                if (!response.ok) return Promise.reject('fetch failed');
-                return response.json();
-            }).then(data => {
-                if (data !== null && data.StartupWizardCompleted === false) {
-                    ServerConnections.setLocalApiClient(firstResult.ApiClient);
-                    Dashboard.navigate('wizardstart.html');
-                } else {
-                    this.handleConnectionResult(firstResult);
-                }
-            }).catch(error => {
-                console.error(error);
-            });
+        if (firstResult) {
+            if (firstResult.State === 'ServerSignIn') {
+                const url = firstResult.ApiClient.serverAddress() + '/System/Info/Public';
+                fetch(url).then(response => {
+                    if (!response.ok) return Promise.reject('fetch failed');
+                    return response.json();
+                }).then(data => {
+                    if (data !== null && data.StartupWizardCompleted === false) {
+                        ServerConnections.setLocalApiClient(firstResult.ApiClient);
+                        Dashboard.navigate('wizardstart.html');
+                    } else {
+                        this.handleConnectionResult(firstResult);
+                    }
+                }).catch(error => {
+                    console.error(error);
+                });
 
-            return;
+                return;
+            } else if (firstResult.State !== 'SignedIn') {
+                this.handleConnectionResult(firstResult);
+                return;
+            }
         }
 
         const apiClient = ServerConnections.currentApiClient();

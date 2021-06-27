@@ -359,7 +359,7 @@ import toast from './toast/toast';
                             itemId: itemId,
                             serverId: serverId,
                             title: item.Name,
-                            filename: item.Path.replace(/^.*[\\\/]/, '')
+                            filename: item.Path.replace(/^.*[\\/]/, '')
                         }]);
                         getResolveFunction(getResolveFunction(resolve, id), id)();
                     });
@@ -471,7 +471,7 @@ import toast from './toast/toast';
                     navigator.share({
                         title: item.Name,
                         text: item.Overview,
-                        url: `${apiClient.serverAddress()}/web/index.html#!/${appRouter.getRouteUrl(item)}`
+                        url: `${apiClient.serverAddress()}/web/index.html${appRouter.getRouteUrl(item)}`
                     });
                     break;
                 case 'album':

@@ -8,7 +8,7 @@ import * as userSettings from './settings/userSettings';
 import '../elements/emby-itemscontainer/emby-itemscontainer';
 import Dashboard from './clientUtils';
 
-export default function (view, params) {
+export default function (view) {
     function getPageData(context) {
         const key = getSavedQueryKey(context);
         let pageData = data[key];
@@ -189,7 +189,7 @@ export default function (view, params) {
         reloadItems();
     });
     view.querySelector('.btnNewPlaylist').addEventListener('click', function () {
-        import('playlistEditor').then(({default: playlistEditor}) => {
+        import('../components/playlisteditor/playlisteditor').then(({default: playlistEditor}) => {
             const serverId = ApiClient.serverInfo().Id;
             new playlistEditor({
                 items: [],
